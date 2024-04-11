@@ -10,14 +10,14 @@ Content-Type: application/json
 Authorization: Bearer {{apiKey}}
 
 {
-  "query": "Github趋势项目",
+  "query": "Lenvia是谁",
   "search_n": 10,
   "search_provider": "google",
   "is_reranking": true,
   "is_detail": true,
-  "detail_min_score": 0.7,
+  "detail_min_score": 0.3,
   "detail_top_k": 3,
   "is_filter": true,
-  "filter_min_score": 0.8,
+  "filter_min_score": 0.3,
   "filter_top_k": 6
 }

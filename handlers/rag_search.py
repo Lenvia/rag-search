@@ -1,3 +1,4 @@
+import asyncio
 import os
 from typing import Optional
 
@@ -132,7 +133,7 @@ def reranking(search_results, query):  # 对全部向量召回结果按照score�
     return sorted_search_results
 
 
-async def fetch_details(search_results, min_score=0.00, top_k=6):  # 对于前 top_k 个链接 获取详情放到map中，按照之前rank的顺序插入
+async def fetch_details(search_results, min_score=0.00, top_k=6):  # 对于前 top_k 个相关度较高的链接， 获取详情放到map中，按照之前rank的顺序插入
     urls = []
     for res in search_results:
         if len(urls) > top_k:
@@ -153,6 +154,7 @@ async def fetch_details(search_results, min_score=0.00, top_k=6):  # 对于前 t
     for result in search_results:
         if result["link"] in content_maps:
             result["content"] = content_maps[result["link"]]
+            print(result['title'], result["content"])
 
     return search_results
 
@@ -185,12 +187,18 @@ def filter_content(search_results, query, filter_min_score=0.8, filter_top_k=10)
     return search_results
 
 
-if __name__ == "__main__":
+async def test():
     query = "Lenvia是谁"
     search_results = search(query, 10)
-    print(search_results)
+    # print(search_results)
 
-    sorted_search_results = reranking(search_results, query)
-    for ssr in sorted_search_results:
-        print(ssr)
+    search_results = await fetch_details(search_results)
+
+    # sorted_search_results = reranking(search_results, query)
+    # for ssr in sorted_search_results:
+    #     print(ssr)
+
+
+if __name__ == "__main__":
+    asyncio.run(test())
     pass

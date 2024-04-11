@@ -62,7 +62,7 @@ async def batch_fetch_urls(urls):
             tasks = [fetch_markdown(session, url) for url in urls]
             # 并行执行所有任务，并收集结果
             results = await asyncio.gather(*tasks, return_exceptions=False)
-
+            print(results)
             return results
     except aiohttp.ClientResponseError as e:
         # 处理HTTP请求错误

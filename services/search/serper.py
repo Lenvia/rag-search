@@ -1,7 +1,12 @@
 import os
+
 import requests
+from dotenv import load_dotenv
+
 from components.log import log
 from utils.hash import md5
+
+load_dotenv()
 
 
 def get_search_results(params):

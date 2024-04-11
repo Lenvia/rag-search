@@ -1,7 +1,8 @@
-import html2text
 import asyncio
-import aiohttp
 import re
+
+import aiohttp
+import html2text
 
 
 async def fetch_url(session, url):
@@ -44,13 +45,26 @@ async def fetch_markdown(session, url):
 
 
 async def batch_fetch_urls(urls):
+    """
+    异步批量获取多个URL的内容。
+
+    参数:
+    urls - 包含多个URL的列表。
+
+    返回值:
+    results - 获取到的内容列表。如果某个URL获取失败，则对应位置为None。
+    """
     print("urls", urls)
     try:
+        # 创建一个异步的HTTP客户端会话
         async with aiohttp.ClientSession() as session:
+            # 为每个URL创建一个异步获取任务
             tasks = [fetch_markdown(session, url) for url in urls]
+            # 并行执行所有任务，并收集结果
             results = await asyncio.gather(*tasks, return_exceptions=False)
 
             return results
     except aiohttp.ClientResponseError as e:
+        # 处理HTTP请求错误
         print(f"batch fetch urls failed: {e}")
         return []

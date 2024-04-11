@@ -1,7 +1,8 @@
 import os
-from llama_index.llms.openai import OpenAI
-from llama_index.embeddings.openai import OpenAIEmbedding
+
 from llama_index.core import ServiceContext
+from llama_index.embeddings.openai import OpenAIEmbedding
+from llama_index.llms.openai import OpenAI
 
 
 def get_service_context():

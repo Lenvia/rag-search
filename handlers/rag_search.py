@@ -1,18 +1,35 @@
 import os
 from typing import Optional
-from pydantic import BaseModel
+
 from fastapi import APIRouter, Header
-from services.search.serper import get_search_results
-from services.document.store import store_results
+from pydantic import BaseModel
+
 from services.document.query import query_results
+from services.document.store import store_results
+from services.search.serper import get_search_results
 from services.web import batch_fetch_urls
 from utils.resp import resp_err, resp_data
-
 
 rag_router = APIRouter()
 
 
 class RagSearchReq(BaseModel):
+    """
+    RagSearchReq 类定义了进行搜索请求时所需参数的数据模型。
+
+    参数:
+    - query: 搜索查询字符串。
+    - locale: 本地化设置，用于指定搜索结果的语言和地区格式，默认为空字符串。
+    - search_n: 搜索结果的数量，默认为10。
+    - search_provider: 搜索服务提供商，默认为'google'。
+    - is_reranking: 是否进行重新排名，默认为False。
+    - is_detail: 是否获取详细结果，默认为False。
+    - detail_top_k: 详细结果中返回的顶部结果数量，默认为6。
+    - detail_min_score: 详细结果的最小得分，默认为0.70。
+    - is_filter: 是否进行过滤，默认为False。
+    - filter_min_score: 过滤的最小得分，默认为0.80。
+    - filter_top_k: 过滤后返回的顶部结果数量，默认为6。
+    """
     query: str
     locale: Optional[str] = ''
     search_n: Optional[int] = 10
@@ -92,7 +109,7 @@ def search(query, num, locale=''):
         raise e
 
 
-def reranking(search_results, query):
+def reranking(search_results, query):  # 对全部向量召回结果按照score进行排序
     try:
         index = store_results(results=search_results)
         match_results = query_results(index, query, 0.00, len(search_results))
@@ -115,7 +132,7 @@ def reranking(search_results, query):
     return sorted_search_results
 
 
-async def fetch_details(search_results, min_score=0.00, top_k=6):
+async def fetch_details(search_results, min_score=0.00, top_k=6):  # 对于前 top_k 个链接 获取详情放到map中，按照之前rank的顺序插入
     urls = []
     for res in search_results:
         if len(urls) > top_k:
@@ -140,7 +157,7 @@ async def fetch_details(search_results, min_score=0.00, top_k=6):
     return search_results
 
 
-def filter_content(search_results, query, filter_min_score=0.8, filter_top_k=10):
+def filter_content(search_results, query, filter_min_score=0.8, filter_top_k=10):  # 过滤掉内容不相关的，但并不按照内容排序，仍按照之前的顺序
     try:
         results_with_content = []
         for result in search_results:
@@ -166,3 +183,14 @@ def filter_content(search_results, query, filter_min_score=0.8, filter_top_k=10)
             result["content"] = content_maps[result["uuid"]]
 
     return search_results
+
+
+if __name__ == "__main__":
+    query = "Lenvia是谁"
+    search_results = search(query, 10)
+    print(search_results)
+
+    sorted_search_results = reranking(search_results, query)
+    for ssr in sorted_search_results:
+        print(ssr)
+    pass
